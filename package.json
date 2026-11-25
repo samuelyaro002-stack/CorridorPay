@@ -1,0 +1,17 @@
+{
+  "name": "corridorpay",
+  "version": "0.1.0",
+  "description": "An agent that pays African community contributors in local stablecoins (cNGN) on Celo. Built for the Agents Open for Business hackathon.",
+  "type": "module",
+  "private": true,
+  "license": "Apache-2.0",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "register": "node scripts/register.mjs",
+    "register:send": "node scripts/register.mjs --send"
+  },
+  "dependencies": {
+    "@celo/attribution-tags": "^0.5.0",
+    "viem": "^2.57.5"
+  }
+}

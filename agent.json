@@ -1,0 +1,9 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "CorridorPay",
+  "description": "An agent that helps Web3 teams pay community moderators and ambassadors in Africa in local stablecoins (cNGN) on Celo: USD₮ in, converted on Textile FX, paid out to contributor wallets. Under development for the Agents Open for Business hackathon.",
+  "services": [],
+  "x402Support": false,
+  "active": false,
+  "supportedTrust": []
+}
