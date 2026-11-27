@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "at": "2026-11-27T21:05:00Z",
+    "agent": "0x1613E23AD93b7dD91AB23812ce29Ba97547a2341",
+    "recipient": "0x902909eB559A46e4A90F7292A028b32D50D6afD8",
+    "tag": "celo_046f6be4dc48",
+    "usdtSpent": "5.000000",
+    "cngnPaid": "7190.344889",
+    "note": "Builder-funded payout (USDT and gas from the builder's own wallets) to a speaker the builder owed for an earlier event. Swap confirmed first; the final transfer was completed by finish-payout.mjs after a balance read lagged. Tagged status is as printed by the script's onchain tag check.",
+    "tx": {
+      "approval": {
+        "hash": "0x6a00b608c69a02d83c1a36ec25137d52bf25bb286c7051b66233ecdf5db10e96",
+        "tagged": true,
+        "celoscan": "https://celoscan.io/tx/0x6a00b608c69a02d83c1a36ec25137d52bf25bb286c7051b66233ecdf5db10e96"
+      },
+      "swap": {
+        "hash": "0xbfca0f7e1328c207667619b1706d569e5f713c7a3af44216060debeaafada252",
+        "tagged": true,
+        "celoscan": "https://celoscan.io/tx/0xbfca0f7e1328c207667619b1706d569e5f713c7a3af44216060debeaafada252"
+      },
+      "payout": {
+        "hash": "0x1ed1376e0833c48467e1ef492acbe9401cf0932b97526559f984d5707bd0ba18",
+        "tagged": true,
+        "celoscan": "https://celoscan.io/tx/0x1ed1376e0833c48467e1ef492acbe9401cf0932b97526559f984d5707bd0ba18"
+      }
+    }
+  }
+]
