@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CorridorPay</title>
+<meta name="description" content="An agent that pays community contributors in Africa in local stablecoins (cNGN) on Celo, with every transaction onchain and tagged.">
+<style>
+  :root { --bg:#fbfaf6; --card:#ffffff; --ink:#14201a; --mute:#5b6a62; --line:#e3e6dc; --accent:#1c6b4a; --accent-ink:#ffffff; --chip:#e8f1e6; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1511; --card:#141d18; --ink:#e8efe9; --mute:#93a39a; --line:#243029; --accent:#5ccf9a; --accent-ink:#0e1511; --chip:#1a2820; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 48px 16px 72px; }
+  h1 { font-size: clamp(2rem, 6vw, 3rem); line-height:1.1; margin:0 0 12px; letter-spacing:-0.02em; }
+  h2 { font-size: 1.25rem; margin: 44px 0 12px; }
+  p { margin: 0 0 12px; }
+  .lead { font-size: 1.15rem; color: var(--mute); max-width: 60ch; }
+  .tag { display:inline-block; background:var(--chip); color:var(--accent); border-radius:999px; padding:4px 12px; font-size:.85rem; font-weight:600; margin-bottom:16px; }
+  .steps { display:grid; gap:12px; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); padding:0; list-style:none; margin:0; counter-reset: s; }
+  .steps li { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; counter-increment: s; }
+  .steps li::before { content: counter(s); display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--accent); color:var(--accent-ink); font-weight:700; font-size:.85rem; margin-bottom:8px; }
+  .steps b { display:block; }
+  .steps span { color:var(--mute); font-size:.95rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; }
+  table { width:100%; border-collapse:collapse; font-size:.95rem; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mute); font-weight:600; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; }
+  tr:last-child td { border-bottom:0; }
+  a { color:var(--accent); }
+  code { font:0.88em ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--chip); padding:1px 6px; border-radius:6px; word-break:break-all; }
+  .scroll { overflow-x:auto; }
+  .note { color:var(--mute); font-size:.92rem; }
+  ul.plain { padding-left: 20px; margin: 0; } ul.plain li { margin-bottom: 6px; }
+  footer { margin-top: 48px; color:var(--mute); font-size:.9rem; }
+</style>
+</head>
+<body>
+<main>
+  <span class="tag">Celo mainnet · Agents Open for Business</span>
+  <h1>CorridorPay</h1>
+  <p class="lead">An agent that helps Web3 teams pay community moderators and ambassadors in Africa in a local stablecoin. USD₮ goes in, converts to cNGN on Textile FX, and lands in the contributor's wallet. Every step is onchain and tagged.</p>
+
+  <h2>How a payout works</h2>
+  <ol class="steps">
+    <li><b>Quote</b><span>Ask Textile FX for a firm USD₮ to cNGN quote, signed by the agent wallet. No account or API key.</span></li>
+    <li><b>Swap</b><span>Approve and swap on Celo. The swap pays the agent wallet itself.</span></li>
+    <li><b>Pay out</b><span>The agent reads the exact cNGN the swap delivered from its logs and sends it to the contributor.</span></li>
+  </ol>
+  <p class="note" style="margin-top:12px">Safety checks: payouts are capped, the recipient can't be the agent wallet, a quote that costs more than approved is refused, and a dry run is the default.</p>
+
+  <h2>Live proof: payouts on Celo mainnet</h2>
+  <div class="card scroll">
+    <table>
+      <thead><tr><th>Date</th><th>Paid</th><th>Recipient</th><th>Transactions</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="4">Loading receipts…</td></tr></tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:10px">Receipts come from <a href="https://github.com/samuelyaro002-stack/CorridorPay/blob/main/receipts/payouts.json">receipts/payouts.json</a> in the repo. Check every link on Celoscan; nothing on this page is needed to verify them.</p>
+
+  <h2>Identity and wallet</h2>
+  <div class="card">
+    <p><b>Agent wallet:</b> <a href="https://celoscan.io/address/0x1613E23AD93b7dD91AB23812ce29Ba97547a2341"><code>0x1613E23AD93b7dD91AB23812ce29Ba97547a2341</code></a></p>
+    <p><b>ERC-8004 agent ID:</b> 10135 · <a href="https://celoscan.io/tx/0xc45c364e2549e983d76b9e33d4e140677199216d92495d8ca7930413857f750a">registration transaction</a></p>
+    <p style="margin:0"><b>Attribution tag:</b> <code>celo_046f6be4dc48</code> on every transaction</p>
+  </div>
+
+  <h2>Honest status</h2>
+  <ul class="plain">
+    <li><b>Done:</b> ERC-8004 identity, Textile FX quote and swap, cNGN payout, tagged transactions, automated tests (<code>npm test</code>), receipts log.</li>
+    <li><b>Funding:</b> the first payout was funded by the builder with their own USD₮ and gas. No sponsored gas.</li>
+    <li><b>Recipient:</b> the first payout went to a speaker from an earlier community event, who confirmed the cNGN arrived.</li>
+    <li><b>Not done yet:</b> a self-serve interface for teams, Self Agent ID checks on payees, and more payouts from other teams. We would rather say so than imply otherwise.</li>
+  </ul>
+
+  <footer>
+    <a href="https://github.com/samuelyaro002-stack/CorridorPay">Source code (Apache-2.0)</a> · Built by Joey Yaro in Kaduna, Nigeria.
+  </footer>
+</main>
+<script>
+  // Fallback so the page is never empty if the receipts fetch fails.
+  var FALLBACK = [{"at":"2026-11-27T21:05:00Z","recipient":"0x902909eB559A46e4A90F7292A028b32D50D6afD8","cngnPaid":"7190.344889","usdtSpent":"5.000000","tx":{"approval":{"hash":"0x6a00b608c69a02d83c1a36ec25137d52bf25bb286c7051b66233ecdf5db10e96","celoscan":"https://celoscan.io/tx/0x6a00b608c69a02d83c1a36ec25137d52bf25bb286c7051b66233ecdf5db10e96"},"swap":{"hash":"0xbfca0f7e1328c207667619b1706d569e5f713c7a3af44216060debeaafada252","celoscan":"https://celoscan.io/tx/0xbfca0f7e1328c207667619b1706d569e5f713c7a3af44216060debeaafada252"},"payout":{"hash":"0x1ed1376e0833c48467e1ef492acbe9401cf0932b97526559f984d5707bd0ba18","celoscan":"https://celoscan.io/tx/0x1ed1376e0833c48467e1ef492acbe9401cf0932b97526559f984d5707bd0ba18"}}}];
+  var URL = "https://raw.githubusercontent.com/samuelyaro002-stack/CorridorPay/main/receipts/payouts.json";
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function short(a){ return a.slice(0,8) + "…" + a.slice(-6); }
+  function safeUrl(u){ return /^https:\/\/celoscan\.io\/tx\/0x[0-9a-fA-F]{64}$/.test(u) ? u : "#"; }
+  function render(list){
+    var rows = list.map(function(r){
+      var links = Object.keys(r.tx || {}).map(function(k){ return '<a href="' + safeUrl(r.tx[k].celoscan) + '">' + esc(k) + '</a>'; }).join(" · ");
+      var d = new Date(r.at); var date = isNaN(d) ? "" : d.toISOString().slice(0,10);
+      return '<tr><td>' + esc(date) + '</td><td>' + esc(r.cngnPaid) + ' cNGN<br><span class="note">from ' + esc(r.usdtSpent) + ' USD₮</span></td><td><code>' + esc(short(r.recipient)) + '</code></td><td>' + links + '</td></tr>';
+    }).join("");
+    document.getElementById("rows").innerHTML = rows || '<tr><td colspan="4">No payouts recorded yet.</td></tr>';
+  }
+  render(FALLBACK);
+  fetch(URL, { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : Promise.reject(); }).then(function(list){ if (Array.isArray(list) && list.length) render(list); }).catch(function(){});
+</script>
+</body>
+</html>
