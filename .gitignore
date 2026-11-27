@@ -2,3 +2,6 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# Self Agent ID sessions hold a generated agent private key. Never commit.
+.self/

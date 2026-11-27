@@ -5,7 +5,9 @@
   "type": "module",
   "private": true,
   "license": "Apache-2.0",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "register": "node scripts/register.mjs",
     "register:send": "node scripts/register.mjs --send",
@@ -16,6 +18,7 @@
   },
   "dependencies": {
     "@celo/attribution-tags": "^0.5.0",
+    "@selfxyz/agent-sdk": "^0.3.1",
     "viem": "^2.57.5"
   }
 }
