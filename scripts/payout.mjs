@@ -10,15 +10,12 @@
 import { randomBytes } from "node:crypto";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { verifyTx, withAttribution } from "@celo/attribution-tags";
-import { createPublicClient, createWalletClient, formatUnits, getAddress, http, isAddress, parseUnits, toHex } from "viem";
+import { createPublicClient, createWalletClient, formatUnits, http, toHex } from "viem";
+import { CHAIN_ID, CNGN, MAX_USDT_DEFAULT, TAKER_CONTROL, USDT, assertQuoteWithinBudget, interpretQuoteResponse, toMs, validatePayout } from "../src/payout-lib.mjs";
 import { privateKeyToAccount } from "viem/accounts";
 import { celo } from "viem/chains";
 
 const API = "https://api.textilecredit.com/v2";
-const CHAIN_ID = 42220;
-const USDT = "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e";
-const CNGN = "0xF6829D7393dAe24509eb1E52eE8e572e2E271a4f";
-const MAX_USDT_DEFAULT = 25; // safety cap per payout; override with --max
 
 const ERC20 = [
   { type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ name: "a", type: "address" }], outputs: [{ type: "uint256" }] },
@@ -45,15 +42,11 @@ if (!code || !/^[a-z0-9_]{1,32}$/.test(code)) stop("BUILDER_CODE missing or inva
 const account = privateKeyToAccount(key);
 if (expected && account.address.toLowerCase() !== expected.toLowerCase()) stop(`Key controls ${account.address}, expected ${expected}.`);
 
-const to = arg("to");
-if (!to || !isAddress(to)) stop("Give the recipient with --to 0x... (a Celo wallet address).");
-const recipient = getAddress(to);
-if (recipient === account.address) stop("Recipient is the agent wallet itself. A payout must go to someone else.");
+let recipient, sellAmount;
 const usdt = Number(arg("usdt"));
-const maxUsdt = Number(arg("max") ?? MAX_USDT_DEFAULT);
-if (!(usdt > 0)) stop("Give the amount with --usdt 5");
-if (usdt > maxUsdt) stop(`--usdt ${usdt} is above the safety cap of ${maxUsdt}. Raise it with --max if you really mean it.`);
-const sellAmount = parseUnits(String(usdt), 6);
+try {
+  ({ recipient, sellAmount } = validatePayout({ to: arg("to"), usdt: arg("usdt"), max: arg("max") ?? MAX_USDT_DEFAULT, agent: account.address }));
+} catch (e) { stop(e.message); }
 
 const pub = createPublicClient({ chain: celo, transport: http() });
 const wallet = createWalletClient({ account, chain: celo, transport: http() }).extend(withAttribution(code));
@@ -72,9 +65,7 @@ if (celoBal < 10n ** 16n) stop("Need at least 0.01 CELO for gas.");
 const issuedAt = Date.now();
 const nonce = toHex(randomBytes(32));
 const signature = await account.signTypedData({
-  domain: { name: "Textile Taker Control", version: "1", chainId: CHAIN_ID },
-  types: { TakerControl: [{ name: "taker", type: "address" }, { name: "chainId", type: "uint256" }, { name: "nonce", type: "bytes32" }, { name: "issuedAt", type: "uint256" }] },
-  primaryType: "TakerControl",
+  ...TAKER_CONTROL,
   message: { taker: account.address, chainId: BigInt(CHAIN_ID), nonce, issuedAt: BigInt(issuedAt) },
 });
 const res = await fetch(`${API}/rfq/request`, {
@@ -84,15 +75,14 @@ const res = await fetch(`${API}/rfq/request`, {
   signal: AbortSignal.timeout(75_000),
 });
 const body = await res.json().catch(() => ({}));
-if (!res.ok) stop(`Textile returned HTTP ${res.status}: ${JSON.stringify(body)}`);
-const rfq = body.data;
-if (rfq?.status !== "quoted") stop(`No quote (${rfq?.status}${rfq?.reason ? ": " + rfq.reason : ""}). ${rfq?.retryAfterMs ? `Retry in ${rfq.retryAfterMs} ms.` : "Try again shortly."}`);
+const parsed = interpretQuoteResponse(res.status, body);
+if (!parsed.ok) stop(parsed.message);
+const rfq = parsed.rfq;
 
 const q = rfq.quote;
-const toMs = (v) => { const n = typeof v === "number" ? v : Date.parse(v); return n < 1e12 ? n * 1000 : n; };
 console.log(`\nQuote:         pay ${formatUnits(BigInt(q.takerPays), 6)} USDT -> receive ${formatUnits(BigInt(q.buyAmount), cngnDecimals)} cNGN (fee ${formatUnits(BigInt(q.feeAmount), 6)} USDT)`);
 console.log(`Quote expires: ${new Date(toMs(q.expiresAt)).toISOString()}`);
-if (BigInt(q.takerPays) > sellAmount) stop("takerPays is higher than the amount you asked to spend. Aborting.");
+try { assertQuoteWithinBudget(q, sellAmount); } catch (e) { stop(e.message); }
 
 const claim = { "X-Rfq-Claim": rfq.claimToken, "Content-Type": "application/json" };
 if (!send) {
