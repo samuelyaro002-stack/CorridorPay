@@ -11,7 +11,7 @@ import { randomBytes } from "node:crypto";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { verifyTx, withAttribution } from "@celo/attribution-tags";
 import { createPublicClient, createWalletClient, formatUnits, http, toHex } from "viem";
-import { CHAIN_ID, CNGN, MAX_USDT_DEFAULT, TAKER_CONTROL, USDT, assertQuoteWithinBudget, interpretQuoteResponse, toMs, validatePayout } from "../src/payout-lib.mjs";
+import { CHAIN_ID, CNGN, MAX_USDT_DEFAULT, TAKER_CONTROL, USDT, assertQuoteWithinBudget, cngnReceivedFromLogs, interpretQuoteResponse, toMs, validatePayout } from "../src/payout-lib.mjs";
 import { privateKeyToAccount } from "viem/accounts";
 import { celo } from "viem/chains";
 
@@ -118,13 +118,13 @@ if (Date.now() >= toMs(q.expiresAt)) stop("The quote expired while approving. No
 const s = rfq.transactions.swap;
 const h2 = await wallet.sendTransaction({ to: s.to, data: s.data, value: 0n });
 receipt.tx.swap = h2;
-await wait(h2, "Swap");
+const swapReceipt = await wait(h2, "Swap");
 await fetch(`${API}/rfq/${rfq.rfqId}/submit`, { method: "POST", headers: claim, body: JSON.stringify({ txHash: h2 }) }).catch(() => {});
 
 // 4. pay the contributor exactly what the swap delivered
-const cngnBal1 = await bal(CNGN);
-const received = cngnBal1 - cngnBal0;
-if (received <= 0n) stop("Swap confirmed but no cNGN arrived. Check Celoscan before doing anything else.");
+const received = cngnReceivedFromLogs(swapReceipt.logs, account.address);
+if (received <= 0n) stop(`Swap confirmed but its logs show no cNGN for the agent wallet. Check Celoscan: https://celoscan.io/tx/${h2}`);
+for (let i = 0; i < 8 && (await bal(CNGN)) - cngnBal0 < received; i++) await new Promise((r) => setTimeout(r, 4000)); // RPC nodes can lag
 receipt.cngnPaid = formatUnits(received, cngnDecimals);
 const h3 = await wallet.writeContract({ address: CNGN, abi: ERC20, functionName: "transfer", args: [recipient, received] });
 receipt.tx.payout = h3;

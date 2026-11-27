@@ -11,6 +11,7 @@
     "register:send": "node scripts/register.mjs --send",
     "preview": "node scripts/preview.mjs",
     "payout": "node scripts/payout.mjs",
+    "finish": "node scripts/finish-payout.mjs",
     "test": "node --test"
   },
   "dependencies": {

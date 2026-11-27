@@ -83,3 +83,16 @@ test("the wallet client appends the attribution tag to a raw transaction", async
   assert.ok(raw.includes(toDataSuffix(code).slice(2)), "raw transaction carries the tag suffix");
   assert.ok(fromDataSuffix);
 });
+
+import { encodeAbiParameters, pad } from "viem";
+import { cngnReceivedFromLogs } from "../src/payout-lib.mjs";
+import { CNGN as CNGN_ADDR } from "../src/payout-lib.mjs";
+
+test("cngnReceivedFromLogs sums cNGN transfers to the agent and ignores others", () => {
+  const agent = "0x1613E23AD93b7dD91AB23812ce29Ba97547a2341";
+  const other = "0x0000000000000000000000000000000000000001";
+  const topic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+  const mk = (address, to, v) => ({ address, topics: [topic, pad(other), pad(to)], data: encodeAbiParameters([{ type: "uint256" }], [v]), blockNumber: 1n, transactionHash: "0x" + "00".repeat(32), transactionIndex: 0, blockHash: "0x" + "00".repeat(32), logIndex: 0, removed: false });
+  const logs = [mk(CNGN_ADDR, agent, 7_190_344_889n), mk(CNGN_ADDR, other, 5n), mk("0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e", agent, 9n)];
+  assert.equal(cngnReceivedFromLogs(logs, agent), 7_190_344_889n);
+});

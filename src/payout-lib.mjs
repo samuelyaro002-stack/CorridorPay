@@ -1,5 +1,5 @@
 /** Pure helpers for the payout flow (no network, no keys), so they can be tested offline. */
-import { getAddress, isAddress, parseUnits } from "viem";
+import { getAddress, isAddress, parseEventLogs, parseUnits } from "viem";
 
 export const CHAIN_ID = 42220;
 export const USDT = "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e";
@@ -50,4 +50,18 @@ export function interpretQuoteResponse(httpStatus, body) {
     return { ok: false, message: `No quote (${rfq?.status}${rfq?.reason ? ": " + rfq.reason : ""}). ${retry}` };
   }
   return { ok: true, rfq };
+}
+
+const TRANSFER_EVENT = [{ type: "event", name: "Transfer", inputs: [{ name: "from", type: "address", indexed: true }, { name: "to", type: "address", indexed: true }, { name: "value", type: "uint256" }] }];
+
+/**
+ * Sum of cNGN the agent received in a swap, read from the transaction's own Transfer logs.
+ * More reliable than reading a balance right after the swap, because load-balanced RPC nodes can lag.
+ */
+export function cngnReceivedFromLogs(logs, agent, token = CNGN) {
+  let total = 0n;
+  for (const l of parseEventLogs({ abi: TRANSFER_EVENT, eventName: "Transfer", logs })) {
+    if (l.address.toLowerCase() === token.toLowerCase() && l.args.to.toLowerCase() === agent.toLowerCase()) total += l.args.value;
+  }
+  return total;
 }
