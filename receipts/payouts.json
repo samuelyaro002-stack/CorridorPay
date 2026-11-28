@@ -24,5 +24,37 @@
         "celoscan": "https://celoscan.io/tx/0x1ed1376e0833c48467e1ef492acbe9401cf0932b97526559f984d5707bd0ba18"
       }
     }
+  },
+  {
+    "at": "2026-11-28T13:35:00Z",
+    "via": "desk",
+    "caller": {
+      "agentId": "233",
+      "address": "0x8896c0d3b1c1529866710Cf9AF2b1F629f31549C",
+      "selfVerified": true
+    },
+    "agent": "0x1613E23AD93b7dD91AB23812ce29Ba97547a2341",
+    "recipient": "0x56F1dC253E1a30c606d37341E386CdAf654D27A3",
+    "tag": "celo_046f6be4dc48",
+    "usdtSpent": "4.000000",
+    "cngnPaid": "5760.669811",
+    "note": "Second payout, and the first through the live desk: a Self-verified agent (ID 233) called the desk, paid a 0.02 USD₮ x402 fee, and the desk ran approve, Textile FX swap, and transfer. Builder-funded (USD₮ and gas from the builder's own wallets, no sponsored gas). Paid to a community contributor the builder owed for PR work in his group; he consented to be mentioned publicly. Tagged status as printed by the desk's onchain tag check.",
+    "tx": {
+      "approval": {
+        "hash": "0xa3d5cfd2ded3433c8d54b9fea2602a050d89258c1821107988345614681c6da5",
+        "tagged": true,
+        "celoscan": "https://celoscan.io/tx/0xa3d5cfd2ded3433c8d54b9fea2602a050d89258c1821107988345614681c6da5"
+      },
+      "swap": {
+        "hash": "0xd20fc6ae423cbbbced52f061c94ea8d79fb684a87b47a0f97c15c150019e06bc",
+        "tagged": true,
+        "celoscan": "https://celoscan.io/tx/0xd20fc6ae423cbbbced52f061c94ea8d79fb684a87b47a0f97c15c150019e06bc"
+      },
+      "payout": {
+        "hash": "0x41cf2dcd1aecf4eac4c5119cf4e50e3a7f738ef989573ccb62f96c057817788f",
+        "tagged": true,
+        "celoscan": "https://celoscan.io/tx/0x41cf2dcd1aecf4eac4c5119cf4e50e3a7f738ef989573ccb62f96c057817788f"
+      }
+    }
   }
 ]

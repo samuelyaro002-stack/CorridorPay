@@ -65,3 +65,7 @@ Known limits: the in-memory daily allowance resets when the service restarts; th
 ### Sanctions check (OFAC)
 
 Self records three OFAC results per human on-chain (`ofac[0..2]`). The SDK's built-in `requireOFAC()` only reads `ofac[0]`, which came back false for the builder's own ID while the other two passed. The desk therefore requires **both name-based checks (`ofac[1]` and `ofac[2]`)** instead (`src/ofac.mjs`, tested). A human failing either is refused. This is a deliberate, disclosed choice, not a bypass of screening.
+
+## Proof: second payout, through the live desk (28 Nov 2026, Celo mainnet)
+
+A Self-verified agent (ID 233) called the desk, paid the 0.02 USD₮ x402 fee, and the desk ran the payout. Builder-funded, no sponsored gas. $4 USD₮ became 5,760.669811 cNGN, sent to a community contributor the builder owed for PR work (he consented to be mentioned). Hashes are in `receipts/payouts.json`; all three transactions are tagged `celo_046f6be4dc48`.
