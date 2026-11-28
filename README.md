@@ -68,4 +68,4 @@ Self records three OFAC results per human on-chain (`ofac[0..2]`). The SDK's bui
 
 ## Proof: second payout, through the live desk (28 Nov 2026, Celo mainnet)
 
-A Self-verified agent (ID 233) called the desk, paid the 0.02 USD₮ x402 fee, and the desk ran the payout. Builder-funded, no sponsored gas. $4 USD₮ became 5,760.669811 cNGN, sent to a community contributor the builder owed for PR work (he consented to be mentioned). Hashes are in `receipts/payouts.json`; all three transactions are tagged `celo_046f6be4dc48`.
+A Self-verified agent (ID 233) called the desk, paid the 0.02 USD₮ x402 fee, and the desk ran the payout. Builder-funded, no sponsored gas. $4 USD₮ became 5,760.669811 cNGN, sent to Emmanuel, PR group admin, whom the builder owed for PR work (he consented to be named and confirmed receipt). Hashes are in `receipts/payouts.json`; all three transactions are tagged `celo_046f6be4dc48`.

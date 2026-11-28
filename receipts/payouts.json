@@ -38,7 +38,7 @@
     "tag": "celo_046f6be4dc48",
     "usdtSpent": "4.000000",
     "cngnPaid": "5760.669811",
-    "note": "Second payout, and the first through the live desk: a Self-verified agent (ID 233) called the desk, paid a 0.02 USD₮ x402 fee, and the desk ran approve, Textile FX swap, and transfer. Builder-funded (USD₮ and gas from the builder's own wallets, no sponsored gas). Paid to a community contributor the builder owed for PR work in his group; he consented to be mentioned publicly. Tagged status as printed by the desk's onchain tag check.",
+    "note": "Second payout, and the first through the live desk: a Self-verified agent (ID 233) called the desk, paid a 0.02 USD₮ x402 fee, and the desk ran approve, Textile FX swap, and transfer. Builder-funded (USD₮ and gas from the builder's own wallets, no sponsored gas). Paid to Emmanuel, PR group admin, whom the builder owed for PR work in his group; he consented to be named publicly and confirmed the wallet and receipt. Tagged status as printed by the desk's onchain tag check.",
     "tx": {
       "approval": {
         "hash": "0xa3d5cfd2ded3433c8d54b9fea2602a050d89258c1821107988345614681c6da5",
