@@ -69,3 +69,11 @@ Self records three OFAC results per human on-chain (`ofac[0..2]`). The SDK's bui
 ## Proof: second payout, through the live desk (28 Nov 2026, Celo mainnet)
 
 A Self-verified agent (ID 233) called the desk, paid the 0.02 USD₮ x402 fee, and the desk ran the payout. Builder-funded, no sponsored gas. $4 USD₮ became 5,760.669811 cNGN, sent to Emmanuel, PR group admin, whom the builder owed for PR work (he consented to be named and confirmed receipt). Hashes are in `receipts/payouts.json`; all three transactions are tagged `celo_046f6be4dc48`.
+
+## Pay page: any team, any wallet (`docs/pay.html`)
+
+A non-custodial page where anyone connects a wallet, enters a recipient and a USD₮ amount, and pays. The user's own wallet signs a free quote request, then approve, swap on Textile FX, and the cNGN transfer. Every transaction is sent through viem with our attribution tag appended, and the page checks the tags onchain and shows a receipt. The user pays their own gas; nothing passes through CorridorPay's servers except, if a browser blocks calling Textile directly, quote requests relayed by the desk (`src/relay.mjs`, an allow-listed pass-through that holds no keys).
+
+- Source: `web/pay.mjs`. Build with `npm run build:web` (bundles into `docs/pay.js`, committed so GitHub Pages can serve it).
+- Browser test with a simulated wallet and simulated Textile: `node scripts/e2e-pay.mjs` (checks three tagged transactions, relay fallback, a rejected swap, bad input). This does not touch the network or move money.
+- Status: tested with the simulated wallet; live runs with real wallets are recorded in `receipts/payouts.json` with `"via": "web"`.

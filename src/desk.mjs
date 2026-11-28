@@ -9,13 +9,16 @@
  */
 import express from "express";
 import { validatePayout } from "./payout-lib.mjs";
+import { mountRelay } from "./relay.mjs";
 
-export function createDeskApp({ auth, payment, executor, policy, deskWallet, tag, live = false, recent = [] }) {
+export function createDeskApp({ auth, payment, executor, policy, deskWallet, tag, live = false, recent = [], relayFetch = fetch }) {
   const app = express();
   app.disable("x-powered-by");
   // The public status endpoints are read-only, so the demo page on GitHub Pages may read them.
   app.use((req, res, next) => { if (req.method === "GET") res.set("Access-Control-Allow-Origin", "*"); next(); });
   app.use(express.json({ limit: "4kb", verify: (req, _res, buf) => { req.rawBody = buf.toString("utf8"); } }));
+
+  mountRelay(app, { fetchImpl: relayFetch });
 
   const info = () => ({
     name: "CorridorPay desk",

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pay with CorridorPay</title>
+<meta name="description" content="Connect your wallet and pay a community contributor in cNGN on Celo. USD₮ in, cNGN out, every transaction tagged.">
+<style>
+  :root { --bg:#fbfaf6; --card:#ffffff; --ink:#14201a; --mute:#5b6a62; --line:#e3e6dc; --accent:#1c6b4a; --accent-ink:#ffffff; --chip:#e8f1e6; --err:#a4322a; --errbg:#fbe9e7; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1511; --card:#141d18; --ink:#e8efe9; --mute:#93a39a; --line:#243029; --accent:#5ccf9a; --accent-ink:#0e1511; --chip:#1a2820; --err:#ff9a90; --errbg:#2b1815; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 32px 16px 72px; }
+  a { color:var(--accent); }
+  h1 { font-size: 1.9rem; line-height:1.15; margin:8px 0 8px; letter-spacing:-0.02em; }
+  .lead { color:var(--mute); margin:0 0 20px; }
+  .tag { display:inline-block; background:var(--chip); color:var(--accent); border-radius:999px; padding:4px 12px; font-size:.82rem; font-weight:600; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; }
+  label { display:block; font-weight:600; font-size:.9rem; margin:12px 0 4px; }
+  input { width:100%; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink); font:inherit; }
+  input:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  button { font:inherit; font-weight:700; border:0; border-radius:10px; padding:12px 16px; background:var(--accent); color:var(--accent-ink); cursor:pointer; width:100%; margin-top:14px; }
+  button.ghost { background:var(--chip); color:var(--accent); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .msg { margin:12px 0 0; padding:10px 12px; border-radius:10px; background:var(--chip); font-size:.92rem; }
+  .msg.err { background:var(--errbg); color:var(--err); }
+  .bal { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; text-align:center; }
+  .bal div { background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:8px 4px; font-size:.8rem; color:var(--mute); }
+  .bal b { display:block; color:var(--ink); font-size:1rem; }
+  .row { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--line); font-size:.95rem; }
+  .row:last-of-type { border-bottom:0; }
+  .row span:first-child { color:var(--mute); }
+  .row span:last-child { text-align:right; word-break:break-all; font-weight:600; }
+  ol.steps { list-style:none; padding:0; margin:0; }
+  ol.steps li { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--line); }
+  ol.steps li:last-child { border-bottom:0; }
+  ol.steps li::before { content:"•"; width:22px; height:22px; flex:none; display:grid; place-items:center; border-radius:50%; background:var(--chip); color:var(--mute); font-weight:700; }
+  ol.steps li[data-state="active"]::before { content:"…"; background:var(--accent); color:var(--accent-ink); }
+  ol.steps li[data-state="done"]::before { content:"✓"; background:var(--accent); color:var(--accent-ink); }
+  ol.steps li[data-state="error"]::before { content:"!"; background:var(--err); color:var(--bg); }
+  ol.steps .t { flex:1; }
+  ol.steps a { font:0.85em ui-monospace,Menlo,monospace; }
+  pre { background:var(--chip); border-radius:10px; padding:12px; overflow:auto; font:0.78em/1.5 ui-monospace,Menlo,monospace; max-height:260px; }
+  .note { color:var(--mute); font-size:.88rem; }
+  .small { font-size:.85rem; }
+  #rSummary { overflow-wrap:anywhere; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <span class="tag">Celo mainnet · live</span>
+  <h1>Pay a contributor in cNGN</h1>
+  <p class="lead">Connect your wallet, enter who to pay and how many USD₮. CorridorPay converts it to cNGN on Textile FX and sends it to them. You sign every step yourself. <a href="./">How it works and proof &rarr;</a></p>
+
+  <div class="card">
+    <button id="connect" style="margin-top:0">Connect wallet</button>
+    <div id="walletBox" hidden>
+      <div class="small note">Connected: <b id="who"></b></div>
+      <div class="bal"><div><b id="balUsdt">…</b>USD₮</div><div><b id="balCngn">…</b>cNGN</div><div><b id="balCelo">…</b>CELO (gas)</div></div>
+    </div>
+    <p id="walletMsg" class="msg" hidden></p>
+  </div>
+
+  <form id="form" class="card" hidden>
+    <label for="to">Recipient wallet (Celo address)</label>
+    <input id="to" placeholder="0x…" autocomplete="off" spellcheck="false" inputmode="text">
+    <label for="amount">Amount to pay, in USD₮</label>
+    <input id="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="4">
+    <button id="getQuote" type="submit">Get a firm price</button>
+    <p class="note small" style="margin:10px 0 0">Asking for a price only needs a free signature, not a transaction. Beta limit: 25 USD₮ per payment.</p>
+    <p id="formMsg" class="msg" hidden></p>
+  </form>
+
+  <div id="quote" class="card" hidden>
+    <div class="row"><span>You pay</span><span id="qPay"></span></div>
+    <div class="row"><span>They receive</span><span id="qGet"></span></div>
+    <div class="row"><span>Rate</span><span id="qRate"></span></div>
+    <div class="row"><span>To</span><span id="qTo"></span></div>
+    <p id="qLeft" class="note small" style="margin:8px 0 0"></p>
+    <button id="pay">Confirm and pay</button>
+    <p class="note small" style="margin:10px 0 0">Your wallet will ask you to confirm up to three transactions: approve, swap, send. You pay the small Celo network fee.</p>
+  </div>
+
+  <div id="progress" class="card" hidden>
+    <ol class="steps">
+      <li id="s-approve" data-state="todo"><span class="t">Approve USD₮</span><a hidden target="_blank" rel="noopener"></a></li>
+      <li id="s-swap" data-state="todo"><span class="t">Swap USD₮ to cNGN</span><a hidden target="_blank" rel="noopener"></a></li>
+      <li id="s-send" data-state="todo"><span class="t">Send cNGN to the recipient</span><a hidden target="_blank" rel="noopener"></a></li>
+    </ol>
+    <p id="payMsg" class="msg err" hidden></p>
+    <button id="retry" class="ghost" hidden>Retry the last step (send cNGN)</button>
+  </div>
+
+  <div id="receipt" class="card" hidden>
+    <b>Done.</b>
+    <p id="rSummary" style="margin:6px 0 0"></p>
+    <details style="margin-top:10px"><summary>Receipt (JSON)</summary><pre id="rJson"></pre><button id="copy" class="ghost" style="margin-top:8px">Copy receipt</button></details>
+  </div>
+
+  <h2 style="font-size:1.05rem;margin:28px 0 8px">What to know</h2>
+  <ul class="note" style="padding-left:20px;margin:0">
+    <li>Non-custodial: your wallet signs everything. CorridorPay never holds your funds or keys.</li>
+    <li>It needs USD₮ and a little CELO for network fees on Celo mainnet. Real money moves, so check the recipient address.</li>
+    <li>The swap runs on Textile FX (fee about 2 bps). Every transaction carries the tag <code>celo_046f6be4dc48</code>.</li>
+    <li>Works in a browser with a wallet (MetaMask, Rabby) or inside a wallet app's built-in browser. If your browser blocks Textile directly, price requests go through the CorridorPay desk, which only forwards them.</li>
+    <li>Beta, built for the Celo Agents Open for Business hackathon. Not audited.</li>
+  </ul>
+</main>
+<script type="module" src="pay.js"></script>
+</body>
+</html>
