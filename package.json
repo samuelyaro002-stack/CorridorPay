@@ -14,11 +14,18 @@
     "preview": "node scripts/preview.mjs",
     "payout": "node scripts/payout.mjs",
     "finish": "node scripts/finish-payout.mjs",
+    "start": "node src/server.mjs",
+    "ask": "node scripts/ask-desk.mjs",
     "test": "node --test"
   },
   "dependencies": {
     "@celo/attribution-tags": "^0.5.0",
     "@selfxyz/agent-sdk": "^0.3.1",
+    "@x402/core": "^2.32.0",
+    "@x402/evm": "^2.32.0",
+    "@x402/express": "^2.32.0",
+    "@x402/fetch": "^2.32.0",
+    "express": "^5.3.0",
     "viem": "^2.57.5"
   }
 }

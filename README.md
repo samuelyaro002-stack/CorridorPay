@@ -42,3 +42,22 @@ The builder owed a payment to a speaker from an earlier community event. Corrido
 All three carry the attribution tag `celo_046f6be4dc48`. The agent wallet was funded by the builder with their own USDT and CELO, so there is no sponsored gas. The payout is builder-funded; the recipient is outside the team. Receipt: `receipts/payouts.json`.
 
 Note: the swap confirmed before the final transfer, because a balance read right after the swap lagged on the RPC node. The transfer was completed with `scripts/finish-payout.mjs`, which reads the amount from the swap's own logs. The main payout script now does the same.
+
+## The desk: Self-verified agents, x402 fee, cNGN payout
+
+`npm start` runs an HTTP desk on the entry wallet. A caller agent asks it to pay someone:
+
+1. **Self Agent ID:** the request must be signed by a Self-registered agent (`SelfAgentVerifier`, mainnet, age 18+, OFAC, one agent per human). Unverified callers get 401 before they ever see a price.
+2. **x402 fee:** the caller pays a small fee in USD₮ on Celo (0.02 by default). If the payout then fails, the desk returns a 5xx and x402 does not settle, so the caller is not charged for a payout that did not happen.
+3. **Limits:** per payout (10 USDT) and per human per day (20 USDT). The daily limit is keyed to the human's nullifier, so registering more agents does not raise it.
+4. **Payout:** Textile quote, approval, swap, then cNGN to the recipient. Every transaction is tagged.
+
+The desk starts in dry-run mode (quotes only, nothing spent). Set `DESK_LIVE=1` to spend. The payout is funded from the desk wallet's own USD₮ float, which the x402 fee does not cover, so keep that float small.
+
+Caller side (the registered Self agent, id 233):
+
+```
+npm run ask -- --desk https://YOUR-DESK --to 0xRecipient --usdt 4
+```
+
+Known limits: the in-memory daily allowance resets when the service restarts; the desk handles one payout at a time; and if x402 settlement fails after the payout, the desk bears that small loss.

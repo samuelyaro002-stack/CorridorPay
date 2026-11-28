@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: corridorpay-desk
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: AGENT_PRIVATE_KEY   # entry wallet key. Keep its balance small; set in the Render dashboard only.
+        sync: false
+      - key: X402_API_KEY        # from the x402.celo.org dashboard
+        sync: false
+      - key: EXPECTED_WALLET
+        value: "0x1613E23AD93b7dD91AB23812ce29Ba97547a2341"
+      - key: BUILDER_CODE
+        value: "celo_046f6be4dc48"
+      - key: DESK_LIVE           # 0 = quotes only. Set to 1 in the dashboard to spend real money.
+        sync: false
+      - key: PER_PAYOUT_MAX_USDT
+        value: "10"
+      - key: DAILY_MAX_USDT
+        value: "20"
+      - key: FEE_ATOMIC
+        value: "20000"
