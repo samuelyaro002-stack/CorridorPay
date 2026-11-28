@@ -11,11 +11,13 @@ import { createDeskApp } from "./desk.mjs";
 import { DeskPolicy } from "./policy.mjs";
 import { createExecutor } from "./payout-runner.mjs";
 import { USDT } from "./payout-lib.mjs";
+import { normalizeKey } from "./key.mjs";
 
 const env = (k, d) => process.env[k] ?? d;
 const need = (k) => { const v = process.env[k]; if (!v) { console.error(`Missing ${k}`); process.exit(1); } return v; };
 
-const key = need("AGENT_PRIVATE_KEY");
+let key;
+try { key = normalizeKey(need("AGENT_PRIVATE_KEY")); } catch (e) { console.error(`AGENT_PRIVATE_KEY problem: ${e.message}.`); process.exit(1); }
 const code = need("BUILDER_CODE");
 const account = privateKeyToAccount(key);
 if (env("EXPECTED_WALLET") && account.address.toLowerCase() !== env("EXPECTED_WALLET").toLowerCase()) { console.error(`Key controls ${account.address}, expected ${env("EXPECTED_WALLET")}.`); process.exit(1); }
