@@ -12,6 +12,7 @@ import { DeskPolicy } from "./policy.mjs";
 import { createExecutor } from "./payout-runner.mjs";
 import { USDT } from "./payout-lib.mjs";
 import { normalizeKey } from "./key.mjs";
+import { ofacGate } from "./ofac.mjs";
 
 const env = (k, d) => process.env[k] ?? d;
 const need = (k) => { const v = process.env[k]; if (!v) { console.error(`Missing ${k}`); process.exit(1); } return v; };
@@ -28,7 +29,7 @@ const executor = createExecutor({ account, pub, wallet, code });
 const policy = new DeskPolicy({ perPayoutMaxUsdt: Number(env("PER_PAYOUT_MAX_USDT", "10")), perHumanDailyMaxUsdt: Number(env("DAILY_MAX_USDT", "20")) });
 const live = env("DESK_LIVE", "0") === "1"; // default: dry-run, nothing is spent
 
-const verifier = SelfAgentVerifier.create().network("mainnet").requireAge(18).requireOFAC().sybilLimit(1).rateLimit({ perMinute: 30 }).build();
+const verifier = SelfAgentVerifier.create().network("mainnet").requireAge(18).includeCredentials().sybilLimit(1).rateLimit({ perMinute: 30 }).build();
 
 const facilitator = new HTTPFacilitatorClient({
   url: "https://api.x402.celo.org",
@@ -49,7 +50,7 @@ const routes = {
 };
 
 const app = createDeskApp({
-  auth: verifier.auth(),
+  auth: [verifier.auth(), ofacGate], // Self ID check, then the name-based sanctions gate
   payment: paymentMiddleware(routes, resourceServer),
   executor, policy, deskWallet: account.address, tag: code, live,
 });

@@ -61,3 +61,7 @@ npm run ask -- --desk https://YOUR-DESK --to 0xRecipient --usdt 4
 ```
 
 Known limits: the in-memory daily allowance resets when the service restarts; the desk handles one payout at a time; and if x402 settlement fails after the payout, the desk bears that small loss.
+
+### Sanctions check (OFAC)
+
+Self records three OFAC results per human on-chain (`ofac[0..2]`). The SDK's built-in `requireOFAC()` only reads `ofac[0]`, which came back false for the builder's own ID while the other two passed. The desk therefore requires **both name-based checks (`ofac[1]` and `ofac[2]`)** instead (`src/ofac.mjs`, tested). A human failing either is refused. This is a deliberate, disclosed choice, not a bypass of screening.
