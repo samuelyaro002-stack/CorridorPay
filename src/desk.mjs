@@ -13,6 +13,8 @@ import { validatePayout } from "./payout-lib.mjs";
 export function createDeskApp({ auth, payment, executor, policy, deskWallet, tag, live = false, recent = [] }) {
   const app = express();
   app.disable("x-powered-by");
+  // The public status endpoints are read-only, so the demo page on GitHub Pages may read them.
+  app.use((req, res, next) => { if (req.method === "GET") res.set("Access-Control-Allow-Origin", "*"); next(); });
   app.use(express.json({ limit: "4kb", verify: (req, _res, buf) => { req.rawBody = buf.toString("utf8"); } }));
 
   const info = () => ({

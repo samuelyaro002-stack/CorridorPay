@@ -31,6 +31,11 @@
   .scroll { overflow-x:auto; }
   .note { color:var(--mute); font-size:.92rem; }
   ul.plain { padding-left: 20px; margin: 0; } ul.plain li { margin-bottom: 6px; }
+  pre { background:var(--chip); border-radius:10px; padding:12px; overflow-x:auto; font:0.85em/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; margin:8px 0 0; }
+  .badge { display:inline-block; border-radius:999px; padding:2px 10px; font-size:.8rem; font-weight:700; background:var(--chip); color:var(--mute); }
+  .badge.live { background:var(--accent); color:var(--accent-ink); }
+  .grid2 { display:grid; gap:12px; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); }
+  .kv { margin:0 0 6px; } .kv b { display:inline-block; min-width:96px; color:var(--mute); font-weight:600; }
   footer { margin-top: 48px; color:var(--mute); font-size:.9rem; }
 </style>
 </head>
@@ -64,12 +69,42 @@
     <p style="margin:0"><b>Attribution tag:</b> <code>celo_046f6be4dc48</code> on every transaction</p>
   </div>
 
+  <h2>The desk: Self-verified agents pay, CorridorPay pays out</h2>
+  <p>Other agents can ask the desk to pay a contributor. The desk checks the caller's <a href="https://self.xyz">Self Agent ID</a> first, takes a small x402 fee in USD₮, then runs the payout above.</p>
+  <div class="grid2">
+    <div class="card">
+      <p class="kv"><b>Status</b> <span id="d-mode" class="badge">checking…</span></p>
+      <p class="kv"><b>Desk wallet</b> <code id="d-wallet">0x1613…2341</code></p>
+      <p class="kv"><b>Limits</b> <span id="d-limits">10 USDT per payout, 20 USDT per human per day</span></p>
+      <p class="kv"><b>Fee</b> 0.02 USD₮ over x402</p>
+      <p class="kv" style="margin:0"><b>Verified caller</b> Self agent <a href="https://celoscan.io/address/0x8896c0d3b1c1529866710Cf9AF2b1F629f31549C">233</a></p>
+      <p class="note" id="d-note" style="margin:8px 0 0"></p>
+    </div>
+    <div class="card">
+      <b>How an agent calls it</b>
+<pre>POST /api/payout
+x-self-agent-* headers (Self ID)
+{ "to": "0x…", "usdt": "4" }
+
+401  not a verified agent
+402  pay the x402 fee
+200  quote or payout receipt</pre>
+    </div>
+  </div>
+  <div class="card scroll" style="margin-top:12px">
+    <table>
+      <thead><tr><th>When</th><th>Caller</th><th>Paid</th><th>Transactions</th></tr></thead>
+      <tbody id="d-rows"><tr><td colspan="4">Loading desk receipts…</td></tr></tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:10px">The desk runs on a free host that sleeps when idle, so the first load can take about a minute. Receipts here come from the running desk; the permanent record is in the table above and on Celoscan.</p>
+
   <h2>Honest status</h2>
   <ul class="plain">
-    <li><b>Done:</b> ERC-8004 identity, Textile FX quote and swap, cNGN payout, tagged transactions, automated tests (<code>npm test</code>), receipts log.</li>
+    <li><b>Done:</b> ERC-8004 identity, Textile FX quote and swap, cNGN payout, tagged transactions, a Self-registered caller agent (ID 233), the desk service with Self Agent ID checks and an x402 fee, automated tests (<code>npm test</code>), receipts log.</li>
     <li><b>Funding:</b> the first payout was funded by the builder with their own USD₮ and gas. No sponsored gas.</li>
     <li><b>Recipient:</b> the first payout went to a speaker from an earlier community event, who confirmed the cNGN arrived.</li>
-    <li><b>Not done yet:</b> a self-serve interface for teams, Self Agent ID checks on payees, and more payouts from other teams. We would rather say so than imply otherwise.</li>
+    <li><b>Not done yet:</b> the desk has been tested offline but has not yet run a live payout; payouts from other teams; a self-serve interface for teams. We would rather say so than imply otherwise.</li>
   </ul>
 
   <footer>
@@ -93,6 +128,27 @@
   }
   render(FALLBACK);
   fetch(URL, { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : Promise.reject(); }).then(function(list){ if (Array.isArray(list) && list.length) render(list); }).catch(function(){});
+
+  // Live desk status. Set DESK_URL once the desk is deployed; the page works without it.
+  var DESK_URL = "https://corridorpay-desk.onrender.com";
+  function deskFail(msg){ var m=document.getElementById("d-mode"); m.textContent="offline"; document.getElementById("d-note").textContent=msg; document.getElementById("d-rows").innerHTML='<tr><td colspan="4">No live receipts to show.</td></tr>'; }
+  var ctl = new AbortController(); setTimeout(function(){ ctl.abort(); }, 70000);
+  fetch(DESK_URL + "/", { signal: ctl.signal }).then(function(r){ return r.json(); }).then(function(info){
+    var m = document.getElementById("d-mode"); var live = String(info.mode || "").indexOf("live") === 0;
+    m.textContent = live ? "live: spends real money" : "dry-run: quotes only"; m.className = "badge" + (live ? " live" : "");
+    if (info.wallet) document.getElementById("d-wallet").textContent = short(info.wallet);
+    if (info.policy) document.getElementById("d-limits").textContent = info.policy.perPayoutMaxUsdt + " USDT per payout, " + info.policy.perHumanDailyMaxUsdt + " USDT per human per day";
+    return fetch(DESK_URL + "/api/receipts").then(function(r){ return r.json(); });
+  }).then(function(list){
+    var rows = (list || []).slice().reverse().map(function(r){
+      var tx = r.tx || {};
+      var links = Object.keys(tx).map(function(k){ return '<a href="' + safeUrl(tx[k].celoscan) + '">' + esc(k) + '</a>'; }).join(" · ");
+      var d = new Date(r.at); var when = isNaN(d) ? "" : d.toISOString().slice(0,16).replace("T"," ");
+      var caller = r.caller ? "agent " + esc(r.caller.agentId) : "";
+      return '<tr><td>' + esc(when) + '</td><td>' + caller + '</td><td>' + esc(r.cngnPaid || "") + ' cNGN</td><td>' + links + '</td></tr>';
+    }).join("");
+    document.getElementById("d-rows").innerHTML = rows || '<tr><td colspan="4">No payouts through the desk since it last started.</td></tr>';
+  }).catch(function(){ deskFail("The desk did not answer (it may be asleep or not deployed yet)."); });
 </script>
 </body>
 </html>
