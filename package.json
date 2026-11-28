@@ -16,7 +16,8 @@
     "finish": "node scripts/finish-payout.mjs",
     "start": "node src/server.mjs",
     "ask": "node scripts/ask-desk.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "check-self": "node scripts/check-self.mjs"
   },
   "dependencies": {
     "@celo/attribution-tags": "^0.5.0",
